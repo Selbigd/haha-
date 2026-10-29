@@ -1,0 +1,126 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071326">
+  <title>A Football Surprise 🎁</title>
+  <style>
+    :root { --navy:#071326; --panel:#10213b; --gold:#ffd166; --white:#f7f9ff; }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100svh; display:grid; place-items:center; padding:20px;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--white); background:radial-gradient(circle at top,#17345b 0,#071326 58%,#030812 100%);
+    }
+    .card {
+      width:min(100%,420px); text-align:center; padding:28px 22px 26px;
+      border:1px solid rgba(255,209,102,.3); border-radius:28px;
+      background:rgba(11,26,48,.88); box-shadow:0 22px 70px #0008;
+    }
+    .eyebrow { color:var(--gold); letter-spacing:3px; font-size:.72rem; font-weight:800; }
+    h1 { font-size:clamp(1.6rem,7vw,2.15rem); margin:10px 0 8px; }
+    .subtitle { color:#c5d1e6; font-size:.95rem; line-height:1.5; margin:0 auto 22px; }
+    .gift-button {
+      display:block; width:100%; border:0; background:transparent; color:inherit;
+      cursor:pointer; padding:8px 0 4px; -webkit-tap-highlight-color:transparent;
+    }
+    .gift {
+      position:relative; width:168px; height:158px; margin:12px auto 18px;
+      display:grid; place-items:center; font-size:104px; line-height:1;
+      filter:drop-shadow(0 14px 18px #0008); transition:transform .25s ease;
+    }
+    .gift-button:active .gift { transform:scale(.95); }
+    .gift::after { content:"TAP TO OPEN"; position:absolute; bottom:-7px; left:50%;
+      transform:translateX(-50%); font-size:11px; letter-spacing:2px; white-space:nowrap;
+      font-weight:900; color:var(--gold); }
+    .hint { color:#c5d1e6; font-size:.85rem; margin:18px 0 0; }
+    .result { display:none; animation:reveal .55s ease both; }
+    .result.show { display:block; }
+    .scoreboard { margin:22px 0 18px; padding:20px 14px; border-radius:20px;
+      background:linear-gradient(135deg,#142b4b,#0a172b); border:1px solid #ffffff1c; }
+    .teams { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; }
+    .team { min-width:0; display:flex; flex-direction:column; align-items:center; gap:10px; }
+    .team img { width:76px; height:76px; object-fit:contain; }
+    .team-name { font-size:.85rem; font-weight:800; line-height:1.2; }
+    .score { font-size:2.2rem; font-weight:900; letter-spacing:2px; white-space:nowrap; }
+    .vs { color:#9fb0c9; font-size:.75rem; font-weight:900; }
+    .final { color:var(--gold); font-weight:900; letter-spacing:3px; font-size:.8rem; margin-top:17px; }
+    .again { border:1px solid #ffffff30; background:#ffffff0c; color:white; padding:12px 18px;
+      border-radius:999px; font-weight:750; font-size:.9rem; cursor:pointer; }
+    .note { color:#9fb0c9; font-size:.72rem; margin:18px 0 0; line-height:1.5; }
+    @keyframes reveal { from { opacity:0; transform:translateY(12px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @media (max-width:360px) {
+      .card { padding:24px 14px; } .team img { width:60px; height:60px; }
+      .score { font-size:1.8rem; } .team-name { font-size:.75rem; }
+    }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">A LITTLE FOOTBALL SURPRISE</div>
+    <h1 id="heading">Something for you 🎁</h1>
+    <p class="subtitle" id="subtitle">A special match surprise is waiting inside.</p>
+
+    <!-- Before opening, the gift is the ONLY visible main item. No team logos are shown. -->
+    <button class="gift-button" id="openGift" type="button" aria-label="Open the football surprise">
+      <span class="gift" aria-hidden="true">🎁</span>
+    </button>
+    <p class="hint" id="hint">Tap the gift to reveal your surprise</p>
+
+    <section class="result" id="result" aria-live="polite">
+      <div class="scoreboard">
+        <div class="teams">
+          <div class="team">
+            <img src="https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+                 alt="Real Madrid logo" onerror="this.style.display='none'">
+            <div class="team-name">REAL MADRID</div>
+          </div>
+          <div class="score">2 <span class="vs">–</span> 1</div>
+          <div class="team">
+            <img src="https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"
+                 alt="FC Barcelona logo" onerror="this.style.display='none'">
+            <div class="team-name">BARCELONA</div>
+          </div>
+        </div>
+        <div class="final">FULL TIME</div>
+      </div>
+      <button class="again" id="again" type="button">🎁 Wrap it again</button>
+      <p class="note">A fun fan-made surprise. This is a sample score display, not a live match result.</p>
+    </section>
+  </main>
+
+  <script>
+    const openGift = document.getElementById('openGift');
+    const result = document.getElementById('result');
+    const heading = document.getElementById('heading');
+    const subtitle = document.getElementById('subtitle');
+    const hint = document.getElementById('hint');
+    const again = document.getElementById('again');
+
+    openGift.addEventListener('click', () => {
+      openGift.style.display = 'none';
+      hint.style.display = 'none';
+      heading.textContent = 'The Match Result! ⚽';
+      subtitle.textContent = 'Here is your football surprise.';
+      result.classList.add('show');
+    });
+
+    again.addEventListener('click', () => {
+      result.classList.remove('show');
+      openGift.style.display = 'block';
+      hint.style.display = 'block';
+      heading.textContent = 'Something for you 🎁';
+      subtitle.textContent = 'A special match surprise is waiting inside.';
+    });
+  </script>
+</body>
+</html>
+'''
+
+path = Path("/mnt/data/index.html")
+path.write_text(html, encoding="utf-8")
+print(f"Created: {path} ({path.stat().st_size} bytes)")
